@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.zucc.mybatis.dao.OrderDAO">
+    <resultMap id="OrderWithDetails" type="cn.edu.zucc.mybatis.entity.Order">
+        <id column="OrderID" property="orderId"/>
+        <id column="CustomerID" property="customerId"/>
+        <id column="EmployeeID" property="employeeId"/>
+        <id column="OrderDate" property="orderDate"/>
+        <association property="orderDetail" javaType="OrderDetail">
+            <id column="ProductID" property="productId"/>
+            <id column="UnitPrice" property="unitPrice"/>
+            <id column="Quantity" property="quantity"/>
+        </association>
+    </resultMap>
+    <select id="getOrderById" parameterType="String" resultMap="OrderWithDetails">
+        select r.*,rd.ProductID,rd.UnitPrice,rd.Quantity
+        from `orders` r,`orderdetails` rd
+        where r.OrderID=rd.OrderID and
+        r.OrderID=#{orderId}
+    </select>
+    <select id="getOrderByProductNameLike" parameterType="String" resultMap="OrderWithDetails">
+        select r.*,rd.ProductID,rd.UnitPrice,rd.Quantity
+        from `orders` r,`orderdetails` rd,`product` p
+        where r.OrderID=rd.OrderID and rd.ProductID=p.ProductID and
+        p.ProductName like "%"#{productName}"%"
+    </select>
+</mapper>

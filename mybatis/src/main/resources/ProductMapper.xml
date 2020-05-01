@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.zucc.mybatis.dao.ProductDAO">
+    <resultMap id="ProductResult" type="Product">
+        <id column="ProductID" jdbcType="VARCHAR" property="productId"/>
+        <id column="ProductName" jdbcType="VARCHAR" property="productName"/>
+        <id column="UnitPrice" jdbcType="DECIMAL" property="unitPrice"/>
+        <id column="UnitsInStock" jdbcType="INTEGER" property="unitsInStock"/>
+        <id column="ProductDesc" jdbcType="VARCHAR" property="productDesc"/>
+    </resultMap>
+    <insert id="addProduct" parameterType="Product">
+        INSERT into product (ProductID,ProductName,UnitPrice,UnitsInStock,ProductDesc)
+        values (#{productId},#{productName},#{unitPrice},#{unitsInStock},#{productDesc})
+    </insert>
+
+    <delete id="deleteProduct" parameterType="String">
+        DELETE FROM product WHERE ProductID = #{productId}
+    </delete>
+
+    <update id="updateProduct" parameterType="Product">
+        UPDATE product
+        <set>
+            <if test="productName != null">ProductName = #{productName},</if>
+            <if test="unitPrice != null">UnitPrice = #{unitPrice},</if>
+            <if test="unitsInStock != null">UnitsInStock = #{unitsInStock},</if>
+            <if test="productDesc != null">ProductDesc = #{productDesc}</if>
+        </set>
+        WHERE ProductId = #{productId}
+    </update>
+
+    <select id="findProductById" parameterType="String" resultType="Product">
+        SELECT * FROM product
+        WHERE ProductID = #{productId}
+    </select>
+
+    <select id="selectProductIf" resultType="Product">
+        SELECT * FROM product
+        <if test="productName != null and productDesc == null">
+            WHERE ProductName = #{productName}
+        </if>
+        <if test="productDesc != null and productName == null">
+            WHERE ProductDesc LIKE concat("%",#{productDesc},"%")
+        </if>
+        <if test="productName != null and productDesc != null">
+            WHERE ProductName = #{productName}
+            OR ProductDesc LIKE "%"#{productDesc}"%"
+        </if>
+    </select>
+
+    <select id="selectProductCWO" resultType="Product">
+        SELECT * FROM product WHERE
+        <choose>
+            <when test="productDesc != null">
+            ProductDesc LIKE "%"#{productDesc}"%"
+            </when>
+            <otherwise>
+                ProductName = #{productName}
+            </otherwise>
+        </choose>
+    </select>
+    
+    <select id="selectProductWhere" resultType="Product">
+        SELECT * FROM product
+        <where>
+            <if test="productName != null">
+                ProductName = #{productName}
+            </if>
+            <if test="productDesc != null">
+                OR ProductDesc LIKE "%"#{productDesc}"%"
+            </if>
+        </where>
+    </select>
+
+    <update id="updateProductSet" parameterType="Product" >
+        UPDATE product
+        <set>
+            <if test="productName != null">ProductName = #{productName},</if>
+            <if test="unitPrice != null">UnitPrice = #{unitPrice},</if>
+            <if test="unitsInStock != null">UnitsInStock = #{unitsInStock}</if>
+            <if test="productDesc != null">ProductDesc = #{productDesc}</if>
+        </set>
+        WHERE ProductID = #{productId}
+    </update>
+
+    <select id="selectProductTrim" resultType="Product">
+        SELECT * FROM product
+        <trim prefix="WHERE" prefixOverrides="AND |OR">
+            <if test="productName != null">
+                ProductName = #{productName}
+            </if>
+            <if test="productDesc != null">
+                OR ProductDesc LIKE "%"#{productDesc}"%"
+            </if>
+        </trim>
+    </select>
+    
+    <select id="selectProductIn" parameterType="list" resultType="Product">
+        SELECT *
+        FROM product
+        WHERE ProductID in
+        <foreach collection="list" item="item" index="index"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    
+    <select id="selectProductBind" parameterType="String" resultType="Product">
+        SELECT * FROM product 
+        <bind name="productDescLike" value="'%' + productDesc + '%'"/>
+        WHERE ProductDesc LIKE #{productDescLike}
+    </select>
+</mapper>
